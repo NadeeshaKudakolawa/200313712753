@@ -5,6 +5,7 @@ import type {
   Officer,
   TrainingProgram,
   NominationResponse,
+  EligibilityRule,
 } from "../types/types";
 
 const API = axios.create({
@@ -17,11 +18,11 @@ const API = axios.create({
 
 export const getDepartments = async (): Promise<Department[]> => {
 
-  const response = await API.get("/departments");
+  const response =
+    await API.get("/departments");
 
   return response.data;
 };
-
 
 // ==========================================
 // OFFICERS
@@ -29,11 +30,11 @@ export const getDepartments = async (): Promise<Department[]> => {
 
 export const getOfficers = async (): Promise<Officer[]> => {
 
-  const response = await API.get("/officers");
+  const response =
+    await API.get("/officers");
 
   return response.data;
 };
-
 
 export const createOfficer = async (
   serviceNumber: string,
@@ -44,33 +45,34 @@ export const createOfficer = async (
   departmentId: number
 ): Promise<Officer> => {
 
-  const response = await API.post(
-    "/officers",
-    {
-      serviceNumber,
-      name,
-      email,
-      grade,
-      dateOfJoining,
-      departmentId,
-    }
-  );
+  const response =
+    await API.post(
+      "/officers",
+      {
+        serviceNumber,
+        name,
+        email,
+        grade,
+        dateOfJoining,
+        departmentId,
+      }
+    );
 
   return response.data;
 };
-
 
 // ==========================================
 // PROGRAMS
 // ==========================================
 
-export const getPrograms = async (): Promise<TrainingProgram[]> => {
+export const getPrograms =
+  async (): Promise<TrainingProgram[]> => {
 
-  const response = await API.get("/programs");
+    const response =
+      await API.get("/programs");
 
-  return response.data;
-};
-
+    return response.data;
+  };
 
 export const createProgram = async (
   title: string,
@@ -79,34 +81,32 @@ export const createProgram = async (
   maximumParticipants: number
 ): Promise<TrainingProgram> => {
 
-  const response = await API.post(
-    "/programs",
-    {
-      title,
-      trainingDate,
-      venue,
-      maximumParticipants,
-    }
-  );
+  const response =
+    await API.post(
+      "/programs",
+      {
+        title,
+        trainingDate,
+        venue,
+        maximumParticipants,
+      }
+    );
 
   return response.data;
 };
-
 
 // ==========================================
 // NOMINATIONS
 // ==========================================
 
-export const getNominations = async (): Promise<
-  NominationResponse[]
-> => {
+export const getNominations =
+  async (): Promise<NominationResponse[]> => {
 
-  const response =
-    await API.get("/nominations");
+    const response =
+      await API.get("/nominations");
 
-  return response.data;
-};
-
+    return response.data;
+  };
 
 export const createNomination = async (
   programId: number,
@@ -127,7 +127,6 @@ export const createNomination = async (
   return response.data;
 };
 
-
 export const cancelNomination = async (
   id: number
 ): Promise<NominationResponse> => {
@@ -140,32 +139,9 @@ export const cancelNomination = async (
   return response.data;
 };
 
-
 // ==========================================
 // ELIGIBILITY RULES
 // ==========================================
-
-export interface EligibilityRule {
-
-  id: number;
-
-  program: TrainingProgram;
-
-  ruleType: string;
-
-  ruleValue: string;
-}
-
-
-export interface EligibilityRuleRequest {
-
-  programId: number;
-
-  ruleType: string;
-
-  ruleValue: string;
-}
-
 
 export const getEligibilityRules = async (
   programId: number
@@ -178,7 +154,6 @@ export const getEligibilityRules = async (
 
   return response.data;
 };
-
 
 export const createEligibilityRule = async (
   programId: number,
@@ -198,7 +173,6 @@ export const createEligibilityRule = async (
 
   return response.data;
 };
-
 
 export const deleteEligibilityRule = async (
   id: number
