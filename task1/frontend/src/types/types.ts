@@ -20,10 +20,12 @@ export interface TrainingProgram {
 }
 
 export interface NominationResponse {
+  id: number;
   registrationNumber: string;
   officerName: string;
   serviceNumber: string;
   programTitle: string;
   departmentName: string;
   status: string;
+  nominatedAt: string;
 }

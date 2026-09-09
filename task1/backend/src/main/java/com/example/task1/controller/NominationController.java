@@ -19,44 +19,38 @@ public class NominationController {
 
     private final NominationService nominationService;
 
-    // POST /api/nominations
+    // CREATE NOMINATION
     @PostMapping
     public ResponseEntity<NominationResponse> createNomination(
             @Valid @RequestBody NominationRequest request) {
 
         NominationResponse response =
-                nominationService.createNomination(
-                        request
-                );
+                nominationService.createNomination(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
 
-    // GET /api/nominations
+    // GET ALL NOMINATIONS
     @GetMapping
     public ResponseEntity<List<NominationResponse>>
     getAllNominations() {
 
-        return ResponseEntity.ok(
-                nominationService.getAllNominations()
-        );
+        List<NominationResponse> nominations =
+                nominationService.getAllNominations();
+
+        return ResponseEntity.ok(nominations);
     }
 
-    // PUT /api/nominations/{id}/cancel
+    // CANCEL NOMINATION
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<NominationResponse>
-    cancelNomination(
+    public ResponseEntity<NominationResponse> cancelNomination(
             @PathVariable Long id) {
 
         NominationResponse response =
-                nominationService.cancelNomination(
-                        id
-                );
+                nominationService.cancelNomination(id);
 
-        return ResponseEntity.ok(
-                response
-        );
+        return ResponseEntity.ok(response);
     }
 }

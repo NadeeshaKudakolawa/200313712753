@@ -1,5 +1,10 @@
 import { useState } from "react";
-import type { Officer, TrainingProgram } from "../types/types";
+
+import type {
+  Officer,
+  TrainingProgram,
+} from "../types/types";
+
 import { createNomination } from "../services/api";
 
 interface Props {
@@ -16,8 +21,14 @@ function NominationForm({
 
   const [programId, setProgramId] = useState("");
   const [officerId, setOfficerId] = useState("");
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const selectedOfficer = officers.find(
+    (officer) =>
+      officer.id === Number(officerId)
+  );
 
   const handleSubmit = async () => {
 
@@ -25,16 +36,18 @@ function NominationForm({
     setError("");
 
     if (!programId || !officerId) {
-      setError("Please select a programme and officer.");
+
+      setError(
+        "Please select a training programme and officer."
+      );
+
       return;
     }
 
-    const officer = officers.find(
-      (item) => item.id === Number(officerId)
-    );
+    if (!selectedOfficer) {
 
-    if (!officer) {
       setError("Officer not found.");
+
       return;
     }
 
@@ -43,11 +56,11 @@ function NominationForm({
       const result = await createNomination(
         Number(programId),
         Number(officerId),
-        officer.department.id
+        selectedOfficer.department.id
       );
 
       setMessage(
-        `Nomination successful! Registration: ${result.registrationNumber}`
+        `Nomination successful! ${result.registrationNumber} - ${result.status}`
       );
 
       setProgramId("");
@@ -59,7 +72,7 @@ function NominationForm({
 
       setError(
         error.response?.data?.message ||
-        "Officer is already nominated for this programme."
+        "Unable to create nomination."
       );
     }
   };
@@ -67,11 +80,11 @@ function NominationForm({
   return (
     <div className="bg-white rounded-xl shadow p-6">
 
-      <h2 className="text-xl font-semibold mb-6">
-        Create Nomination
+      <h2 className="text-xl font-bold mb-6">
+        New Nomination
       </h2>
 
-      {/* Programme */}
+      {/* PROGRAMME */}
 
       <div className="mb-5">
 
@@ -81,8 +94,10 @@ function NominationForm({
 
         <select
           value={programId}
-          onChange={(e) => setProgramId(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2"
+          onChange={(e) =>
+            setProgramId(e.target.value)
+          }
+          className="w-full border border-gray-300 rounded-lg px-3 py-2"
         >
 
           <option value="">
@@ -90,19 +105,21 @@ function NominationForm({
           </option>
 
           {programs.map((program) => (
+
             <option
               key={program.id}
               value={program.id}
             >
               {program.title}
             </option>
+
           ))}
 
         </select>
 
       </div>
 
-      {/* Officer */}
+      {/* OFFICER */}
 
       <div className="mb-5">
 
@@ -112,8 +129,10 @@ function NominationForm({
 
         <select
           value={officerId}
-          onChange={(e) => setOfficerId(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2"
+          onChange={(e) =>
+            setOfficerId(e.target.value)
+          }
+          className="w-full border border-gray-300 rounded-lg px-3 py-2"
         >
 
           <option value="">
@@ -121,21 +140,23 @@ function NominationForm({
           </option>
 
           {officers.map((officer) => (
+
             <option
               key={officer.id}
               value={officer.id}
             >
               {officer.serviceNumber} - {officer.name}
             </option>
+
           ))}
 
         </select>
 
       </div>
 
-      {/* Department */}
+      {/* DEPARTMENT */}
 
-      {officerId && (
+      {selectedOfficer && (
 
         <div className="mb-5">
 
@@ -144,40 +165,38 @@ function NominationForm({
           </label>
 
           <div className="bg-gray-100 rounded-lg px-3 py-2">
-            {
-              officers.find(
-                (item) => item.id === Number(officerId)
-              )?.department.name
-            }
+            {selectedOfficer.department.name}
           </div>
 
         </div>
 
       )}
 
-      {/* Error */}
+      {/* ERROR */}
 
       {error && (
-        <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg mb-4">
+
+        <div className="bg-red-100 text-red-700 rounded-lg p-3 mb-4">
           {error}
         </div>
+
       )}
 
-      {/* Success */}
+      {/* SUCCESS */}
 
       {message && (
-        <div className="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-4">
+
+        <div className="bg-green-100 text-green-700 rounded-lg p-3 mb-4">
           {message}
         </div>
-      )}
 
-      {/* Button */}
+      )}
 
       <button
         onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+        className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700"
       >
-        Nominate Officer
+        Submit Nomination
       </button>
 
     </div>

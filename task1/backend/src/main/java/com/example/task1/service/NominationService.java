@@ -22,237 +22,203 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NominationService {
 
-        private final NominationRepository nominationRepository;
-        private final OfficerRepository officerRepository;
-        private final TrainingProgramRepository programRepository;
-        private final DepartmentRepository departmentRepository;
+    private final NominationRepository nominationRepository;
+    private final OfficerRepository officerRepository;
+    private final TrainingProgramRepository programRepository;
+    private final DepartmentRepository departmentRepository;
 
-        // CREATE NOMINATION
-        @Transactional
-        public NominationResponse createNomination(
-                NominationRequest request) {
+    // CREATE NOMINATION
+    @Transactional
+    public NominationResponse createNomination(
+            NominationRequest request) {
 
-                Officer officer =
-                        officerRepository.findById(
-                                request.getOfficerId()
-                        ).orElseThrow(() ->
+        // 1. Find officer
+        Officer officer = officerRepository
+                .findById(request.getOfficerId())
+                .orElseThrow(() ->
+                        new RuntimeException("Officer not found"));
+
+        // 2. Find programme
+        TrainingProgram program = programRepository
+                .findById(request.getProgramId())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Training programme not found"));
+
+        // 3. Find department
+        Department department = departmentRepository
+                .findById(request.getDepartmentId())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Department not found"));
+
+        // 4. Check duplicate
+        boolean exists = nominationRepository
+                .existsByProgramIdAndOfficerId(
+                        request.getProgramId(),
+                        request.getOfficerId()
+                );
+
+        if (exists) {
+
+            throw new DuplicateNominationException(
+                    officer.getName()
+                            + " is already nominated for this training programme"
+            );
+        }
+
+        // 5. Check confirmed participants
+        long confirmedCount =
+                nominationRepository.countByProgramIdAndStatus(
+                        program.getId(),
+                        "CONFIRMED"
+                );
+
+        // 6. Decide status
+        String status;
+
+        if (confirmedCount < program.getMaximumParticipants()) {
+
+            status = "CONFIRMED";
+
+        } else {
+
+            status = "WAITING";
+        }
+
+        // 7. Create nomination
+        Nomination nomination = new Nomination();
+
+        nomination.setRegistrationNumber(
+                generateRegistrationNumber()
+        );
+
+        nomination.setProgram(program);
+        nomination.setOfficer(officer);
+        nomination.setDepartment(department);
+        nomination.setStatus(status);
+        nomination.setNominatedAt(LocalDateTime.now());
+
+        Nomination saved =
+                nominationRepository.save(nomination);
+
+        // 8. Return response
+        return convertToResponse(saved);
+    }
+
+    // GET ALL NOMINATIONS
+    public List<NominationResponse> getAllNominations() {
+
+        return nominationRepository
+                .findAll()
+                .stream()
+                .sorted(
+                        (a, b) -> {
+
+                            if (a.getNominatedAt()
+                                    .equals(b.getNominatedAt())) {
+
+                                return a.getId()
+                                        .compareTo(b.getId());
+                            }
+
+                            return a.getNominatedAt()
+                                    .compareTo(b.getNominatedAt());
+                        }
+                )
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    // CANCEL NOMINATION
+    @Transactional
+    public NominationResponse cancelNomination(Long nominationId) {
+
+        // 1. Find nomination
+        Nomination nomination =
+                nominationRepository.findById(nominationId)
+                        .orElseThrow(() ->
                                 new RuntimeException(
-                                        "Officer not found"
-                                )
-                        );
+                                        "Nomination not found"));
 
-                TrainingProgram program =
-                        programRepository.findById(
-                                request.getProgramId()
-                        ).orElseThrow(() ->
-                                new RuntimeException(
-                                        "Training programme not found"
-                                )
-                        );
+        // 2. Check if already cancelled
+        if ("CANCELLED".equals(nomination.getStatus())) {
 
-                Department department =
-                        departmentRepository.findById(
-                                request.getDepartmentId()
-                        ).orElseThrow(() ->
-                                new RuntimeException(
-                                        "Department not found"
-                                )
-                        );
-
-                // DUPLICATE CHECK
-                boolean exists =
-                        nominationRepository
-                                .existsByProgramIdAndOfficerId(
-                                        request.getProgramId(),
-                                        request.getOfficerId()
-                                );
-
-                if (exists) {
-
-                        throw new DuplicateNominationException(
-                                officer.getName()
-                                        + " is already nominated for this training programme"
-                        );
-                }
-
-                // COUNT CONFIRMED PARTICIPANTS
-                long confirmedCount =
-                        nominationRepository
-                                .countByProgramIdAndStatus(
-                                        program.getId(),
-                                        "CONFIRMED"
-                                );
-
-                String status;
-
-                // CAPACITY CHECK
-                if (confirmedCount <
-                        program.getMaximumParticipants()) {
-
-                        status = "CONFIRMED";
-
-                } else {
-
-                        status = "WAITING";
-                }
-
-                // CREATE NOMINATION
-                Nomination nomination =
-                        new Nomination();
-
-                nomination.setRegistrationNumber(
-                        generateRegistrationNumber()
-                );
-
-                nomination.setProgram(program);
-
-                nomination.setOfficer(officer);
-
-                nomination.setDepartment(department);
-
-                nomination.setStatus(status);
-
-                nomination.setNominatedAt(
-                        LocalDateTime.now()
-                );
-
-                Nomination saved =
-                        nominationRepository.save(
-                                nomination
-                        );
-
-                return convertToResponse(saved);
+            throw new RuntimeException(
+                    "Nomination is already cancelled");
         }
 
-        // GET ALL NOMINATIONS
-        public List<NominationResponse> getAllNominations() {
+        // 3. Remember programme
+        TrainingProgram program =
+                nomination.getProgram();
 
-                return nominationRepository
-                        .findAll()
-                        .stream()
-                        .sorted(
-                                (a, b) -> {
+        // 4. Check whether this person was confirmed
+        boolean wasConfirmed =
+                "CONFIRMED".equals(nomination.getStatus());
 
-                                        if (a.getNominatedAt()
-                                                .equals(b.getNominatedAt())) {
+        // 5. Cancel nomination
+        nomination.setStatus("CANCELLED");
 
-                                                return a.getId()
-                                                        .compareTo(b.getId());
-                                        }
+        Nomination cancelled =
+                nominationRepository.save(nomination);
 
-                                        return a.getNominatedAt()
-                                                .compareTo(
-                                                        b.getNominatedAt()
-                                                );
-                                }
-                        )
-                        .map(this::convertToResponse)
-                        .toList();
+        // 6. If confirmed person cancelled,
+        //    promote first waiting person
+        if (wasConfirmed) {
+
+            promoteNextWaitingPerson(program);
         }
 
-        // CANCEL NOMINATION
-        @Transactional
-        public NominationResponse cancelNomination(
-                Long nominationId) {
+        return convertToResponse(cancelled);
+    }
 
-                Nomination nomination =
-                        nominationRepository
-                                .findById(nominationId)
-                                .orElseThrow(() ->
-                                        new RuntimeException(
-                                                "Nomination not found"
-                                        )
-                                );
+    // PROMOTE FIRST WAITING PERSON
+    private void promoteNextWaitingPerson(
+            TrainingProgram program) {
 
-                if ("CANCELLED".equals(
-                        nomination.getStatus())) {
-
-                        throw new RuntimeException(
-                                "Nomination is already cancelled"
-                        );
-                }
-
-                TrainingProgram program =
-                        nomination.getProgram();
-
-                boolean wasConfirmed =
-                        "CONFIRMED".equals(
-                                nomination.getStatus()
+        List<Nomination> waitingList =
+                nominationRepository
+                        .findByProgramIdAndStatusOrderByNominatedAtAscIdAsc(
+                                program.getId(),
+                                "WAITING"
                         );
 
-                nomination.setStatus(
-                        "CANCELLED"
-                );
+        if (!waitingList.isEmpty()) {
 
-                Nomination cancelled =
-                        nominationRepository.save(
-                                nomination
-                        );
+            Nomination nextPerson =
+                    waitingList.get(0);
 
-                // PROMOTE FIRST WAITING PERSON
-                if (wasConfirmed) {
+            nextPerson.setStatus("CONFIRMED");
 
-                        promoteNextWaitingPerson(
-                                program
-                        );
-                }
-
-                return convertToResponse(
-                        cancelled
-                );
+            nominationRepository.save(nextPerson);
         }
+    }
 
-        // FIFO WAITING LIST
-        private void promoteNextWaitingPerson(
-                TrainingProgram program) {
+    // CONVERT ENTITY TO DTO
+    private NominationResponse convertToResponse(
+            Nomination nomination) {
 
-                List<Nomination> waitingList =
-                        nominationRepository
-                                .findByProgramIdAndStatusOrderByNominatedAtAscIdAsc(
-                                        program.getId(),
-                                        "WAITING"
-                                );
+        return new NominationResponse(
+                nomination.getId(),
+                nomination.getRegistrationNumber(),
+                nomination.getOfficer().getName(),
+                nomination.getOfficer().getServiceNumber(),
+                nomination.getProgram().getTitle(),
+                nomination.getDepartment().getName(),
+                nomination.getStatus(),
+                nomination.getNominatedAt()
+        );
+    }
 
-                if (!waitingList.isEmpty()) {
+    // GENERATE REGISTRATION NUMBER
+    private String generateRegistrationNumber() {
 
-                        Nomination nextPerson =
-                                waitingList.get(0);
+        long count =
+                nominationRepository.count() + 1;
 
-                        nextPerson.setStatus(
-                                "CONFIRMED"
-                        );
-
-                        nominationRepository.save(
-                                nextPerson
-                        );
-                }
-        }
-
-        // ENTITY -> DTO
-        private NominationResponse convertToResponse(
-                Nomination nomination) {
-
-                return new NominationResponse(
-                        nomination.getId(),
-                        nomination.getRegistrationNumber(),
-                        nomination.getOfficer().getName(),
-                        nomination.getOfficer().getServiceNumber(),
-                        nomination.getProgram().getTitle(),
-                        nomination.getDepartment().getName(),
-                        nomination.getStatus(),
-                        nomination.getNominatedAt()
-                );
-        }
-
-        // REGISTRATION NUMBER
-        private String generateRegistrationNumber() {
-
-                long count =
-                        nominationRepository.count() + 1;
-
-                return String.format(
-                        "REG-2026-%05d",
-                        count
-                );
-        }
+        return String.format(
+                "REG-2026-%05d",
+                count
+        );
+    }
 }
