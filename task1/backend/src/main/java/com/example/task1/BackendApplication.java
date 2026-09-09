@@ -48,24 +48,32 @@ public class BackendApplication {
                 officer1.setName("A. Perera");
                 officer1.setEmail("aperera@gov.lk");
                 officer1.setDepartment(finance);
+                officer1.setGrade("Senior Officer");
+                officer1.setDateOfJoining(LocalDate.of(2018, 1, 10));
 
                 Officer officer2 = new Officer();
                 officer2.setServiceNumber("OFF002");
                 officer2.setName("B. Silva");
                 officer2.setEmail("bsilva@gov.lk");
                 officer2.setDepartment(finance);
+                officer2.setGrade("Officer");
+                officer2.setDateOfJoining(LocalDate.of(2020, 5, 15));
 
                 Officer officer3 = new Officer();
                 officer3.setServiceNumber("OFF003");
                 officer3.setName("C. Fernando");
                 officer3.setEmail("cfernando@gov.lk");
                 officer3.setDepartment(administration);
+                officer3.setGrade("Senior Officer");
+                officer3.setDateOfJoining(LocalDate.of(2017, 3, 20));
 
                 Officer officer4 = new Officer();
                 officer4.setServiceNumber("OFF004");
                 officer4.setName("D. Perera");
                 officer4.setEmail("dperera@gov.lk");
                 officer4.setDepartment(humanResources);
+                officer4.setGrade("Officer");
+                officer4.setDateOfJoining(LocalDate.of(2022, 7, 1));
 
                 officerRepository.save(officer1);
                 officerRepository.save(officer2);
