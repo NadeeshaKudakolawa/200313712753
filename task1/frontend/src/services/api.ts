@@ -11,43 +11,66 @@ const API = axios.create({
   baseURL: "http://localhost:8080/api",
 });
 
+// ==========================================
 // DEPARTMENTS
+// ==========================================
+
 export const getDepartments = async (): Promise<Department[]> => {
+
   const response = await API.get("/departments");
 
   return response.data;
 };
 
+
+// ==========================================
 // OFFICERS
+// ==========================================
+
 export const getOfficers = async (): Promise<Officer[]> => {
+
   const response = await API.get("/officers");
 
   return response.data;
 };
 
+
 export const createOfficer = async (
   serviceNumber: string,
   name: string,
   email: string,
+  grade: string,
+  dateOfJoining: string,
   departmentId: number
 ): Promise<Officer> => {
 
-  const response = await API.post("/officers", {
-    serviceNumber,
-    name,
-    email,
-    departmentId,
-  });
+  const response = await API.post(
+    "/officers",
+    {
+      serviceNumber,
+      name,
+      email,
+      grade,
+      dateOfJoining,
+      departmentId,
+    }
+  );
 
   return response.data;
 };
 
+
+// ==========================================
 // PROGRAMS
+// ==========================================
+
 export const getPrograms = async (): Promise<TrainingProgram[]> => {
+
   const response = await API.get("/programs");
 
   return response.data;
 };
+
 
 export const createProgram = async (
   title: string,
@@ -56,25 +79,34 @@ export const createProgram = async (
   maximumParticipants: number
 ): Promise<TrainingProgram> => {
 
-  const response = await API.post("/programs", {
-    title,
-    trainingDate,
-    venue,
-    maximumParticipants,
-  });
+  const response = await API.post(
+    "/programs",
+    {
+      title,
+      trainingDate,
+      venue,
+      maximumParticipants,
+    }
+  );
 
   return response.data;
 };
 
+
+// ==========================================
 // NOMINATIONS
+// ==========================================
+
 export const getNominations = async (): Promise<
   NominationResponse[]
 > => {
 
-  const response = await API.get("/nominations");
+  const response =
+    await API.get("/nominations");
 
   return response.data;
 };
+
 
 export const createNomination = async (
   programId: number,
@@ -82,25 +114,97 @@ export const createNomination = async (
   departmentId: number
 ): Promise<NominationResponse> => {
 
-  const response = await API.post(
-    "/nominations",
-    {
-      programId,
-      officerId,
-      departmentId,
-    }
-  );
+  const response =
+    await API.post(
+      "/nominations",
+      {
+        programId,
+        officerId,
+        departmentId,
+      }
+    );
 
   return response.data;
 };
+
 
 export const cancelNomination = async (
   id: number
 ): Promise<NominationResponse> => {
 
-  const response = await API.put(
-    `/nominations/${id}/cancel`
-  );
+  const response =
+    await API.put(
+      `/nominations/${id}/cancel`
+    );
 
   return response.data;
+};
+
+
+// ==========================================
+// ELIGIBILITY RULES
+// ==========================================
+
+export interface EligibilityRule {
+
+  id: number;
+
+  program: TrainingProgram;
+
+  ruleType: string;
+
+  ruleValue: string;
+}
+
+
+export interface EligibilityRuleRequest {
+
+  programId: number;
+
+  ruleType: string;
+
+  ruleValue: string;
+}
+
+
+export const getEligibilityRules = async (
+  programId: number
+): Promise<EligibilityRule[]> => {
+
+  const response =
+    await API.get(
+      `/eligibility-rules/program/${programId}`
+    );
+
+  return response.data;
+};
+
+
+export const createEligibilityRule = async (
+  programId: number,
+  ruleType: string,
+  ruleValue: string
+): Promise<EligibilityRule> => {
+
+  const response =
+    await API.post(
+      "/eligibility-rules",
+      {
+        programId,
+        ruleType,
+        ruleValue,
+      }
+    );
+
+  return response.data;
+};
+
+
+export const deleteEligibilityRule = async (
+  id: number
+): Promise<void> => {
+
+  await API.delete(
+    `/eligibility-rules/${id}`
+  );
 };

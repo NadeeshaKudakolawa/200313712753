@@ -9,7 +9,10 @@ interface Props {
   onSuccess: () => void;
 }
 
-function OfficerForm({ departments, onSuccess }: Props) {
+function OfficerForm({
+  departments,
+  onSuccess,
+}: Props) {
 
   const [serviceNumber, setServiceNumber] =
     useState("");
@@ -18,6 +21,12 @@ function OfficerForm({ departments, onSuccess }: Props) {
     useState("");
 
   const [email, setEmail] =
+    useState("");
+
+  const [grade, setGrade] =
+    useState("");
+
+  const [dateOfJoining, setDateOfJoining] =
     useState("");
 
   const [departmentId, setDepartmentId] =
@@ -34,10 +43,16 @@ function OfficerForm({ departments, onSuccess }: Props) {
     setMessage("");
     setError("");
 
-    if (!serviceNumber || !name || !departmentId) {
+    if (
+      !serviceNumber ||
+      !name ||
+      !grade ||
+      !dateOfJoining ||
+      !departmentId
+    ) {
 
       setError(
-        "Service number, name, and department are required."
+        "Service number, name, grade, date of joining, and department are required."
       );
 
       return;
@@ -49,6 +64,8 @@ function OfficerForm({ departments, onSuccess }: Props) {
         serviceNumber,
         name,
         email,
+        grade,
+        dateOfJoining,
         Number(departmentId)
       );
 
@@ -59,6 +76,8 @@ function OfficerForm({ departments, onSuccess }: Props) {
       setServiceNumber("");
       setName("");
       setEmail("");
+      setGrade("");
+      setDateOfJoining("");
       setDepartmentId("");
 
       onSuccess();
@@ -81,6 +100,8 @@ function OfficerForm({ departments, onSuccess }: Props) {
 
       <div className="space-y-4">
 
+        {/* SERVICE NUMBER */}
+
         <div>
 
           <label className="block text-sm font-medium mb-1">
@@ -97,6 +118,8 @@ function OfficerForm({ departments, onSuccess }: Props) {
           />
 
         </div>
+
+        {/* NAME */}
 
         <div>
 
@@ -115,6 +138,8 @@ function OfficerForm({ departments, onSuccess }: Props) {
 
         </div>
 
+        {/* EMAIL */}
+
         <div>
 
           <label className="block text-sm font-medium mb-1">
@@ -132,6 +157,46 @@ function OfficerForm({ departments, onSuccess }: Props) {
           />
 
         </div>
+
+        {/* GRADE */}
+
+        <div>
+
+          <label className="block text-sm font-medium mb-1">
+            Grade / Designation
+          </label>
+
+          <input
+            value={grade}
+            onChange={(e) =>
+              setGrade(e.target.value)
+            }
+            placeholder="Senior Officer"
+            className="w-full border rounded-lg px-3 py-2"
+          />
+
+        </div>
+
+        {/* DATE OF JOINING */}
+
+        <div>
+
+          <label className="block text-sm font-medium mb-1">
+            Date of Joining
+          </label>
+
+          <input
+            type="date"
+            value={dateOfJoining}
+            onChange={(e) =>
+              setDateOfJoining(e.target.value)
+            }
+            className="w-full border rounded-lg px-3 py-2"
+          />
+
+        </div>
+
+        {/* DEPARTMENT */}
 
         <div>
 
@@ -152,26 +217,41 @@ function OfficerForm({ departments, onSuccess }: Props) {
             </option>
 
             {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
+
+              <option
+                key={dept.id}
+                value={dept.id}
+              >
                 {dept.name}
               </option>
+
             ))}
 
           </select>
 
         </div>
 
+        {/* ERROR */}
+
         {error && (
+
           <div className="bg-red-100 text-red-700 p-3 rounded-lg">
             {error}
           </div>
+
         )}
 
+        {/* SUCCESS */}
+
         {message && (
+
           <div className="bg-green-100 text-green-700 p-3 rounded-lg">
             {message}
           </div>
+
         )}
+
+        {/* SUBMIT */}
 
         <button
           onClick={handleSubmit}
