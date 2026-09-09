@@ -1,24 +1,24 @@
 import { useState } from "react";
 
-import { createOfficer } from "../services/api";
+import { createProgram } from "../services/api";
 
 interface Props {
   onSuccess: () => void;
 }
 
-function OfficerForm({ onSuccess }: Props) {
+function ProgramForm({ onSuccess }: Props) {
 
-  const [serviceNumber, setServiceNumber] =
+  const [title, setTitle] =
     useState("");
 
-  const [name, setName] =
+  const [trainingDate, setTrainingDate] =
     useState("");
 
-  const [email, setEmail] =
+  const [venue, setVenue] =
     useState("");
 
-  const [departmentId, setDepartmentId] =
-    useState("1");
+  const [maximumParticipants, setMaximumParticipants] =
+    useState("");
 
   const [message, setMessage] =
     useState("");
@@ -31,10 +31,21 @@ function OfficerForm({ onSuccess }: Props) {
     setMessage("");
     setError("");
 
-    if (!serviceNumber || !name) {
+    if (!title || !trainingDate || !venue || !maximumParticipants) {
 
       setError(
-        "Service number and name are required."
+        "All fields are required."
+      );
+
+      return;
+    }
+
+    const capacity = Number(maximumParticipants);
+
+    if (isNaN(capacity) || capacity < 1) {
+
+      setError(
+        "Maximum participants must be at least 1."
       );
 
       return;
@@ -42,20 +53,21 @@ function OfficerForm({ onSuccess }: Props) {
 
     try {
 
-      await createOfficer(
-        serviceNumber,
-        name,
-        email,
-        Number(departmentId)
+      const result = await createProgram(
+        title,
+        trainingDate,
+        venue,
+        capacity
       );
 
       setMessage(
-        "Officer registered successfully."
+        `Programme "${result.title}" created successfully.`
       );
 
-      setServiceNumber("");
-      setName("");
-      setEmail("");
+      setTitle("");
+      setTrainingDate("");
+      setVenue("");
+      setMaximumParticipants("");
 
       onSuccess();
 
@@ -63,7 +75,7 @@ function OfficerForm({ onSuccess }: Props) {
 
       setError(
         error.response?.data?.message ||
-        "Unable to register officer."
+        "Unable to create training programme."
       );
     }
   };
@@ -72,7 +84,7 @@ function OfficerForm({ onSuccess }: Props) {
     <div className="bg-white rounded-xl shadow p-6">
 
       <h2 className="text-xl font-bold mb-5">
-        Register Officer
+        Create Training Programme
       </h2>
 
       <div className="space-y-4">
@@ -80,15 +92,15 @@ function OfficerForm({ onSuccess }: Props) {
         <div>
 
           <label className="block text-sm font-medium mb-1">
-            Service Number
+            Programme Title
           </label>
 
           <input
-            value={serviceNumber}
+            value={title}
             onChange={(e) =>
-              setServiceNumber(e.target.value)
+              setTitle(e.target.value)
             }
-            placeholder="OFF005"
+            placeholder="Leadership Development"
             className="w-full border rounded-lg px-3 py-2"
           />
 
@@ -97,15 +109,15 @@ function OfficerForm({ onSuccess }: Props) {
         <div>
 
           <label className="block text-sm font-medium mb-1">
-            Officer Name
+            Training Date
           </label>
 
           <input
-            value={name}
+            type="date"
+            value={trainingDate}
             onChange={(e) =>
-              setName(e.target.value)
+              setTrainingDate(e.target.value)
             }
-            placeholder="E. Silva"
             className="w-full border rounded-lg px-3 py-2"
           />
 
@@ -114,16 +126,15 @@ function OfficerForm({ onSuccess }: Props) {
         <div>
 
           <label className="block text-sm font-medium mb-1">
-            Email
+            Venue
           </label>
 
           <input
-            type="email"
-            value={email}
+            value={venue}
             onChange={(e) =>
-              setEmail(e.target.value)
+              setVenue(e.target.value)
             }
-            placeholder="esilva@gov.lk"
+            placeholder="Colombo Training Centre"
             className="w-full border rounded-lg px-3 py-2"
           />
 
@@ -132,30 +143,19 @@ function OfficerForm({ onSuccess }: Props) {
         <div>
 
           <label className="block text-sm font-medium mb-1">
-            Department
+            Maximum Participants
           </label>
 
-          <select
-            value={departmentId}
+          <input
+            type="number"
+            min="1"
+            value={maximumParticipants}
             onChange={(e) =>
-              setDepartmentId(e.target.value)
+              setMaximumParticipants(e.target.value)
             }
+            placeholder="40"
             className="w-full border rounded-lg px-3 py-2"
-          >
-
-            <option value="1">
-              Finance
-            </option>
-
-            <option value="2">
-              Administration
-            </option>
-
-            <option value="3">
-              Human Resources
-            </option>
-
-          </select>
+          />
 
         </div>
 
@@ -175,7 +175,7 @@ function OfficerForm({ onSuccess }: Props) {
           onClick={handleSubmit}
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
         >
-          Register Officer
+          Create Programme
         </button>
 
       </div>
@@ -184,4 +184,4 @@ function OfficerForm({ onSuccess }: Props) {
   );
 }
 
-export default OfficerForm;
+export default ProgramForm;

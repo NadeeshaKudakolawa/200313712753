@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 
 import NominationForm from "./components/NominationForm";
 import NominationList from "./components/NominationList";
+import OfficerForm from "./components/OfficerForm";
+import ProgramForm from "./components/ProgramForm";
 
 import {
+  getDepartments,
   getOfficers,
   getPrograms,
   getNominations,
@@ -11,12 +14,16 @@ import {
 } from "./services/api";
 
 import type {
+  Department,
   Officer,
   TrainingProgram,
   NominationResponse,
 } from "./types/types";
 
 function App() {
+
+  const [departments, setDepartments] =
+    useState<Department[]>([]);
 
   const [officers, setOfficers] =
     useState<Officer[]>([]);
@@ -30,9 +37,16 @@ function App() {
   const [loading, setLoading] =
     useState(true);
 
+  // Active tab: "nominations" | "officers" | "programs"
+  const [activeTab, setActiveTab] =
+    useState("nominations");
+
   const loadData = async () => {
 
     try {
+
+      const departmentsData =
+        await getDepartments();
 
       const officersData =
         await getOfficers();
@@ -43,6 +57,7 @@ function App() {
       const nominationsData =
         await getNominations();
 
+      setDepartments(departmentsData);
       setOfficers(officersData);
       setPrograms(programsData);
       setNominations(nominationsData);
@@ -126,57 +141,84 @@ function App() {
 
       </header>
 
+      {/* TABS */}
+
+      <div className="bg-white border-b shadow-sm">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="flex gap-0">
+
+            <button
+              onClick={() => setActiveTab("nominations")}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "nominations"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Nominations
+            </button>
+
+            <button
+              onClick={() => setActiveTab("officers")}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "officers"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Register Officer
+            </button>
+
+            <button
+              onClick={() => setActiveTab("programs")}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "programs"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Create Programme
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
       {/* MAIN */}
 
       <main className="max-w-7xl mx-auto px-6 py-8">
 
-        {/* PROGRAMME INFORMATION */}
+        {/* NOMINATIONS TAB */}
 
-        {programs.length > 0 && (
+        {activeTab === "nominations" && (
 
-          <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <h2 className="text-lg font-bold">
-              {programs[0].title}
-            </h2>
+            {/* NOMINATION FORM */}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
 
-              <div>
+              <NominationForm
+                departments={departments}
+                officers={officers}
+                programs={programs}
+                onSuccess={loadData}
+              />
 
-                <p className="text-sm text-gray-500">
-                  Training Date
-                </p>
+            </div>
 
-                <p className="font-medium">
-                  {programs[0].trainingDate}
-                </p>
+            {/* NOMINATION LIST */}
 
-              </div>
+            <div className="lg:col-span-2">
 
-              <div>
-
-                <p className="text-sm text-gray-500">
-                  Venue
-                </p>
-
-                <p className="font-medium">
-                  {programs[0].venue}
-                </p>
-
-              </div>
-
-              <div>
-
-                <p className="text-sm text-gray-500">
-                  Maximum Participants
-                </p>
-
-                <p className="font-medium">
-                  {programs[0].maximumParticipants}
-                </p>
-
-              </div>
+              <NominationList
+                nominations={nominations}
+                onCancel={handleCancel}
+              />
 
             </div>
 
@@ -184,34 +226,34 @@ function App() {
 
         )}
 
-        {/* CONTENT */}
+        {/* REGISTER OFFICER TAB */}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {activeTab === "officers" && (
 
-          {/* FORM */}
+          <div className="max-w-md">
 
-          <div>
-
-            <NominationForm
-              officers={officers}
-              programs={programs}
+            <OfficerForm
+              departments={departments}
               onSuccess={loadData}
             />
 
           </div>
 
-          {/* LIST */}
+        )}
 
-          <div className="lg:col-span-2">
+        {/* CREATE PROGRAMME TAB */}
 
-            <NominationList
-              nominations={nominations}
-              onCancel={handleCancel}
+        {activeTab === "programs" && (
+
+          <div className="max-w-md">
+
+            <ProgramForm
+              onSuccess={loadData}
             />
 
           </div>
 
-        </div>
+        )}
 
       </main>
 

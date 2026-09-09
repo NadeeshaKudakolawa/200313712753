@@ -1,206 +1,118 @@
-import { useState } from "react";
-
-import type {
-  Officer,
-  TrainingProgram,
-} from "../types/types";
-
-import { createNomination } from "../services/api";
+import type { NominationResponse } from "../types/types";
 
 interface Props {
-  officers: Officer[];
-  programs: TrainingProgram[];
-  onSuccess: () => void;
+  nominations: NominationResponse[];
+  onCancel: (id: number) => void;
 }
 
-function NominationForm({
-  officers,
-  programs,
-  onSuccess,
-}: Props) {
+function NominationList({ nominations, onCancel }: Props) {
 
-  const [programId, setProgramId] = useState("");
-  const [officerId, setOfficerId] = useState("");
+  // Return badge style based on status
+  const getStatusStyle = (status: string) => {
 
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const selectedOfficer = officers.find(
-    (officer) =>
-      officer.id === Number(officerId)
-  );
-
-  const handleSubmit = async () => {
-
-    setMessage("");
-    setError("");
-
-    if (!programId || !officerId) {
-
-      setError(
-        "Please select a training programme and officer."
-      );
-
-      return;
+    if (status === "CONFIRMED") {
+      return "bg-green-100 text-green-700";
     }
 
-    if (!selectedOfficer) {
-
-      setError("Officer not found.");
-
-      return;
+    if (status === "WAITING") {
+      return "bg-yellow-100 text-yellow-700";
     }
 
-    try {
-
-      const result = await createNomination(
-        Number(programId),
-        Number(officerId),
-        selectedOfficer.department.id
-      );
-
-      setMessage(
-        `Nomination successful! ${result.registrationNumber} - ${result.status}`
-      );
-
-      setProgramId("");
-      setOfficerId("");
-
-      onSuccess();
-
-    } catch (error: any) {
-
-      setError(
-        error.response?.data?.message ||
-        "Unable to create nomination."
-      );
+    if (status === "CANCELLED") {
+      return "bg-red-100 text-red-700";
     }
+
+    return "bg-gray-100 text-gray-700";
   };
 
   return (
     <div className="bg-white rounded-xl shadow p-6">
 
       <h2 className="text-xl font-bold mb-6">
-        New Nomination
+        Nominations
       </h2>
 
-      {/* PROGRAMME */}
+      {nominations.length === 0 && (
 
-      <div className="mb-5">
+        <p className="text-gray-500 text-center py-8">
+          No nominations yet.
+        </p>
 
-        <label className="block text-sm font-medium mb-2">
-          Training Programme
-        </label>
+      )}
 
-        <select
-          value={programId}
-          onChange={(e) =>
-            setProgramId(e.target.value)
-          }
-          className="w-full border border-gray-300 rounded-lg px-3 py-2"
-        >
+      <div className="space-y-4">
 
-          <option value="">
-            Select programme
-          </option>
+        {nominations.map((nomination) => (
 
-          {programs.map((program) => (
+          <div
+            key={nomination.id}
+            className="border border-gray-200 rounded-lg p-4"
+          >
 
-            <option
-              key={program.id}
-              value={program.id}
-            >
-              {program.title}
-            </option>
+            <div className="flex justify-between items-start">
 
-          ))}
+              <div>
 
-        </select>
+                <p className="font-semibold text-gray-800">
+                  {nomination.officerName}
+                </p>
 
-      </div>
+                <p className="text-sm text-gray-500">
+                  Service No: {nomination.serviceNumber}
+                </p>
 
-      {/* OFFICER */}
+                <p className="text-sm text-gray-600 mt-1">
+                  {nomination.programTitle}
+                </p>
 
-      <div className="mb-5">
+                <p className="text-sm text-gray-500">
+                  Nominating Department: {nomination.departmentName}
+                </p>
 
-        <label className="block text-sm font-medium mb-2">
-          Officer
-        </label>
+                <p className="text-xs text-gray-400 mt-1">
+                  Reg: {nomination.registrationNumber}
+                </p>
 
-        <select
-          value={officerId}
-          onChange={(e) =>
-            setOfficerId(e.target.value)
-          }
-          className="w-full border border-gray-300 rounded-lg px-3 py-2"
-        >
+                <p className="text-xs text-gray-400">
+                  Nominated:{" "}
+                  {new Date(nomination.nominatedAt).toLocaleString()}
+                </p>
 
-          <option value="">
-            Select officer
-          </option>
+              </div>
 
-          {officers.map((officer) => (
+              <div className="flex flex-col items-end gap-2">
 
-            <option
-              key={officer.id}
-              value={officer.id}
-            >
-              {officer.serviceNumber} - {officer.name}
-            </option>
+                <span
+                  className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusStyle(
+                    nomination.status
+                  )}`}
+                >
+                  {nomination.status}
+                </span>
 
-          ))}
+                {nomination.status !== "CANCELLED" && (
 
-        </select>
+                  <button
+                    onClick={() => onCancel(nomination.id)}
+                    className="text-sm text-red-600 hover:underline"
+                  >
+                    Cancel
+                  </button>
 
-      </div>
+                )}
 
-      {/* DEPARTMENT */}
+              </div>
 
-      {selectedOfficer && (
+            </div>
 
-        <div className="mb-5">
-
-          <label className="block text-sm font-medium mb-2">
-            Department
-          </label>
-
-          <div className="bg-gray-100 rounded-lg px-3 py-2">
-            {selectedOfficer.department.name}
           </div>
 
-        </div>
+        ))}
 
-      )}
-
-      {/* ERROR */}
-
-      {error && (
-
-        <div className="bg-red-100 text-red-700 rounded-lg p-3 mb-4">
-          {error}
-        </div>
-
-      )}
-
-      {/* SUCCESS */}
-
-      {message && (
-
-        <div className="bg-green-100 text-green-700 rounded-lg p-3 mb-4">
-          {message}
-        </div>
-
-      )}
-
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700"
-      >
-        Submit Nomination
-      </button>
+      </div>
 
     </div>
   );
 }
 
-export default NominationForm;
+export default NominationList;

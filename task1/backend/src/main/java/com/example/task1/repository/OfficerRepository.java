@@ -5,4 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OfficerRepository
         extends JpaRepository<Officer, Long> {
-}
+
+    // Check if a service number already exists
+    boolean existsByServiceNumber(String serviceNumber);
+}

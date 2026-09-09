@@ -1,12 +1,15 @@
 import { useState } from "react";
 
+import type { Department } from "../types/types";
+
 import { createOfficer } from "../services/api";
 
 interface Props {
+  departments: Department[];
   onSuccess: () => void;
 }
 
-function OfficerForm({ onSuccess }: Props) {
+function OfficerForm({ departments, onSuccess }: Props) {
 
   const [serviceNumber, setServiceNumber] =
     useState("");
@@ -18,7 +21,7 @@ function OfficerForm({ onSuccess }: Props) {
     useState("");
 
   const [departmentId, setDepartmentId] =
-    useState("1");
+    useState("");
 
   const [message, setMessage] =
     useState("");
@@ -31,10 +34,10 @@ function OfficerForm({ onSuccess }: Props) {
     setMessage("");
     setError("");
 
-    if (!serviceNumber || !name) {
+    if (!serviceNumber || !name || !departmentId) {
 
       setError(
-        "Service number and name are required."
+        "Service number, name, and department are required."
       );
 
       return;
@@ -56,6 +59,7 @@ function OfficerForm({ onSuccess }: Props) {
       setServiceNumber("");
       setName("");
       setEmail("");
+      setDepartmentId("");
 
       onSuccess();
 
@@ -132,7 +136,7 @@ function OfficerForm({ onSuccess }: Props) {
         <div>
 
           <label className="block text-sm font-medium mb-1">
-            Department
+            Officer's Department
           </label>
 
           <select
@@ -143,17 +147,15 @@ function OfficerForm({ onSuccess }: Props) {
             className="w-full border rounded-lg px-3 py-2"
           >
 
-            <option value="1">
-              Finance
+            <option value="">
+              Select department
             </option>
 
-            <option value="2">
-              Administration
-            </option>
-
-            <option value="3">
-              Human Resources
-            </option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
+              </option>
+            ))}
 
           </select>
 
