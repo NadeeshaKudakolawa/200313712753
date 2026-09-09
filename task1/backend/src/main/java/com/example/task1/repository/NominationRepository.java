@@ -3,6 +3,7 @@ package com.example.task1.repository;
 import com.example.task1.entity.Nomination;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface NominationRepository
@@ -22,5 +23,12 @@ public interface NominationRepository
     findByProgramIdAndStatusOrderByNominatedAtAscIdAsc(
             Long programId,
             String status
+    );
+
+    boolean existsByOfficerIdAndProgramIdAndStatusAndNominatedAtAfter(
+            Long officerId,
+            Long programId,
+            String status,
+            LocalDateTime date
     );
 }

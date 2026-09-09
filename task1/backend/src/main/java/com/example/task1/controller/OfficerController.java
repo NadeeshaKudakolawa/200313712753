@@ -34,30 +34,56 @@ public class OfficerController {
     public ResponseEntity<Officer> createOfficer(
             @Valid @RequestBody OfficerRequest request) {
 
-        // Check for duplicate service number
+        // Check duplicate service number
         if (officerRepository.existsByServiceNumber(
                 request.getServiceNumber())) {
 
             throw new RuntimeException(
                     "An officer with service number '"
                             + request.getServiceNumber()
-                            + "' already exists.");
+                            + "' already exists."
+            );
         }
 
-        // Find the department
-        Department department = departmentRepository
-                .findById(request.getDepartmentId())
-                .orElseThrow(() ->
-                        new RuntimeException("Department not found"));
+        // Find department
+        Department department =
+                departmentRepository.findById(
+                        request.getDepartmentId()
+                ).orElseThrow(() ->
+                        new RuntimeException(
+                                "Department not found"
+                        )
+                );
 
         // Create officer
         Officer officer = new Officer();
-        officer.setServiceNumber(request.getServiceNumber());
-        officer.setName(request.getName());
-        officer.setEmail(request.getEmail());
-        officer.setDepartment(department);
 
-        Officer saved = officerRepository.save(officer);
+        officer.setServiceNumber(
+                request.getServiceNumber()
+        );
+
+        officer.setName(
+                request.getName()
+        );
+
+        officer.setEmail(
+                request.getEmail()
+        );
+
+        officer.setGrade(
+                request.getGrade()
+        );
+
+        officer.setDateOfJoining(
+                request.getDateOfJoining()
+        );
+
+        officer.setDepartment(
+                department
+        );
+
+        Officer saved =
+                officerRepository.save(officer);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

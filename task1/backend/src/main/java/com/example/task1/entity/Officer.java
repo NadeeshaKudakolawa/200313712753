@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "officers")
 @Getter
@@ -21,6 +23,12 @@ public class Officer {
     private String name;
 
     private String email;
+
+    @Column(nullable = false)
+    private String grade;
+
+    @Column(nullable = false)
+    private LocalDate dateOfJoining;
 
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false)
