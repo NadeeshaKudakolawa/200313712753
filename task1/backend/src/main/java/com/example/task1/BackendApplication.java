@@ -7,9 +7,9 @@ import com.example.task1.repository.DepartmentRepository;
 import com.example.task1.repository.OfficerRepository;
 import com.example.task1.repository.TrainingProgramRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
 
@@ -21,10 +21,10 @@ public class BackendApplication {
     }
 
     @Bean
-    CommandLineRunner dataLoader(
+    CommandLineRunner loadData(
             DepartmentRepository departmentRepository,
             OfficerRepository officerRepository,
-            TrainingProgramRepository programRepository) {
+            TrainingProgramRepository trainingProgramRepository) {
 
         return args -> {
 
@@ -36,8 +36,12 @@ public class BackendApplication {
                 Department administration = new Department();
                 administration.setName("Administration");
 
+                Department humanResources = new Department();
+                humanResources.setName("Human Resources");
+
                 departmentRepository.save(finance);
                 departmentRepository.save(administration);
+                departmentRepository.save(humanResources);
 
                 Officer officer1 = new Officer();
                 officer1.setServiceNumber("OFF001");
@@ -47,22 +51,34 @@ public class BackendApplication {
 
                 Officer officer2 = new Officer();
                 officer2.setServiceNumber("OFF002");
-                officer2.setName("K. Silva");
-                officer2.setEmail("ksilva@gov.lk");
+                officer2.setName("B. Silva");
+                officer2.setEmail("bsilva@gov.lk");
                 officer2.setDepartment(finance);
+
+                Officer officer3 = new Officer();
+                officer3.setServiceNumber("OFF003");
+                officer3.setName("C. Fernando");
+                officer3.setEmail("cfernando@gov.lk");
+                officer3.setDepartment(administration);
+
+                Officer officer4 = new Officer();
+                officer4.setServiceNumber("OFF004");
+                officer4.setName("D. Perera");
+                officer4.setEmail("dperera@gov.lk");
+                officer4.setDepartment(humanResources);
 
                 officerRepository.save(officer1);
                 officerRepository.save(officer2);
+                officerRepository.save(officer3);
+                officerRepository.save(officer4);
 
                 TrainingProgram program = new TrainingProgram();
-                program.setTitle("Advanced Management");
-                program.setTrainingDate(
-                        LocalDate.of(2026, 10, 10)
-                );
+                program.setTitle("Cybersecurity Awareness Programme");
+                program.setTrainingDate(LocalDate.of(2026, 10, 10));
                 program.setVenue("Colombo Training Centre");
-                program.setMaximumParticipants(50);
+                program.setMaximumParticipants(40);
 
-                programRepository.save(program);
+                trainingProgramRepository.save(program);
             }
         };
     }

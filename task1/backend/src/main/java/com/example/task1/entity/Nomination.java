@@ -39,7 +39,9 @@ public class Nomination {
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
+    @Column(nullable = false)
     private String status;
 
+    @Column(nullable = false)
     private LocalDateTime nominatedAt;
 }

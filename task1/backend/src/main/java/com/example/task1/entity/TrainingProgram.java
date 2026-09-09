@@ -24,5 +24,6 @@ public class TrainingProgram {
 
     private String venue;
 
+    @Column(nullable = false)
     private Integer maximumParticipants;
 }

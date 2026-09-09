@@ -23,6 +23,6 @@ public class Officer {
     private String email;
 
     @ManyToOne
-    @JoinColumn(name = "department_id")
+    @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 }
