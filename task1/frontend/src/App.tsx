@@ -9,7 +9,7 @@ import {
   getNominations,
 } from "./services/api";
 
-import {
+import type {
   Officer,
   TrainingProgram,
   NominationResponse,

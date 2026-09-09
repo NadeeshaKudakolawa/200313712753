@@ -1,29 +1,31 @@
-export interface Department {
-  id: number;
-  name: string;
-}
+import axios from "axios";
+import type { Officer, TrainingProgram, NominationResponse } from "../types/types";
 
-export interface Officer {
-  id: number;
-  serviceNumber: string;
-  name: string;
-  email: string;
-  department: Department;
-}
+const BASE_URL = "http://localhost:8080/api";
 
-export interface TrainingProgram {
-  id: number;
-  title: string;
-  trainingDate: string;
-  venue: string;
-  maximumParticipants: number;
-}
+export const getOfficers = async (): Promise<Officer[]> => {
+  const response = await axios.get<Officer[]>(`${BASE_URL}/officers`);
+  return response.data;
+};
 
-export interface NominationResponse {
-  registrationNumber: string;
-  officerName: string;
-  serviceNumber: string;
-  programTitle: string;
-  departmentName: string;
-  status: string;
-}
+export const getPrograms = async (): Promise<TrainingProgram[]> => {
+  const response = await axios.get<TrainingProgram[]>(`${BASE_URL}/programs`);
+  return response.data;
+};
+
+export const getNominations = async (): Promise<NominationResponse[]> => {
+  const response = await axios.get<NominationResponse[]>(`${BASE_URL}/nominations`);
+  return response.data;
+};
+
+export const createNomination = async (
+  programId: number,
+  officerId: number,
+  departmentId: number
+): Promise<NominationResponse> => {
+  const response = await axios.post<NominationResponse>(
+    `${BASE_URL}/nominations`,
+    { programId, officerId, departmentId }
+  );
+  return response.data;
+};

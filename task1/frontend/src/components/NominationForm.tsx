@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Officer, TrainingProgram } from "../types/types";
+import type { Officer, TrainingProgram } from "../types/types";
 import { createNomination } from "../services/api";
 
 interface Props {
